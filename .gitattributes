@@ -1,0 +1,17 @@
+# see https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings
+
+# always use Windows line endings
+* text eol=crlf
+
+# do not modify line endings on binary files
+
+# images
+*.gif binary
+*.jpg binary
+*.png binary
+*.ico binary
+
+# fonts 
+*.otf binary
+*.woff binary
+*.woff2 binary
