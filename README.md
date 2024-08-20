@@ -12,7 +12,7 @@ La Trobe University Library is grateful to all who have contributed to this proo
 
 # Contact
 
-The maintainer of this repository is FIRSTNAME SURNAME, who can be contacted at < ADDRESS >@latrobe.edu.au
+The maintainer of this repository is <Firstname> <Surname>, who can be contacted at <address>@latrobe.edu.au
 
 # Description 
 
