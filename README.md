@@ -81,7 +81,7 @@ The primary difference between the scripts is in how they identify which directo
 This script attempts to convert every subdirectory if it matches a given naming convention:
 
 ```
-[] all-books-originals <-- $collectionPath>
+[] all-books-originals <-- $collectionPath
    - [] book-1
         - [] docs <-- this directory will be ignored
         - [] ignored-folder <-- this directory will be ignored
@@ -99,7 +99,7 @@ You would use this script to process everything in a directory (e.g. all the boo
 This script attempts to convert every subdirectory if it matches a given naming convention, only if the first child directory is in a given set:
 
 ```
-[] all-books-originals <-- $collectionPath>
+[] all-books-originals <-- $collectionPath
    - [] book-1
         - [] docs <-- this directory will be ignored
         - [] ignored-folder <-- this directory will be ignored
@@ -118,7 +118,7 @@ You would use this if you want to only process a smaller batch from a directory 
 This script attempts to convert every subdirectory it finds if it matches a given naming convention, _unless_ the first child directory is in a given set:
 
 ```
-[] all-books-originals <-- $collectionPath>
+[] all-books-originals <-- $collectionPath
    - [] book-1
         - [] docs <-- this directory will be ignored
         - [] ignored-folder <-- this directory will be ignored
