@@ -43,7 +43,7 @@ Installing ImageMagick is slightly more complicated. Go to [the ImageMagick down
 
 One you have installed both PowerShell and ImageMagick, you will be able to run the `magick` command to check that everything is properly installed. Open Powershell and type:
 
-```ps
+```pwsh
 magick --version
 ```
 
@@ -62,7 +62,7 @@ If you instead receive a message stating that `The term 'magick' is not recogniz
 
 An alternative way to install is using `winget` directly from Powershell:
 
-```sh
+```pwsh
 winget install ImageMagick.Q16-HDRI
 ```
 
@@ -80,15 +80,17 @@ The primary difference between the scripts is in how they identify which directo
 
 This script attempts to convert every subdirectory if it matches a given naming convention:
 
-[] _all-books-originals_ <-- $collectionPath>
-   - [] _book-1_
-        - [] _docs_ <-- this directory will be ignored
-        - [] _ignored-folder_ <-- this directory will be ignored
-        - [] **Renamed TIFF** <-- this directory will be processed
-   - [] _book-2_
-        - [] _docs_ <-- this directory will be ignored
-        - [] _jpgs_ <-- this directory will be ignored
-        - [] **TIFFs renamed** <-- this directory will be processed
+```
+[] all-books-originals <-- $collectionPath>
+   - [] book-1
+        - [] docs <-- this directory will be ignored
+        - [] ignored-folder <-- this directory will be ignored
+        - [] Renamed TIFF <-- this directory will be processed
+   - [] book-2
+        - [] docs <-- this directory will be ignored
+        - [] jpg <-- this directory will be ignored
+        - [] TIFFs renamed <-- this directory will be processed
+```
 
 You would use this script to process everything in a directory (e.g. all the books from a digitisation project).
 
@@ -96,17 +98,18 @@ You would use this script to process everything in a directory (e.g. all the boo
 
 This script attempts to convert every subdirectory if it matches a given naming convention, only if the first child directory is in a given set:
 
-
-[] _all-books-originals_ <-- $collectionPath>
-   - [] _book-1_
-        - [] _docs_ <-- this directory will be ignored
-        - [] _ignored-folder_ <-- this directory will be ignored
-        - [] **Renamed TIFF** <-- this directory will be processed
-   - [] _book-2_ <-- this whole parent directory is ignored because it is not in the inclusion set
-   - [] _book-3_
-        - [] _docs_ <-- this directory will be ignored
-        - [] _jpgs_ <-- this directory will be ignored
-        - [] **TIFFs renamed** <-- this directory will be processed
+```
+[] all-books-originals <-- $collectionPath>
+   - [] book-1
+        - [] docs <-- this directory will be ignored
+        - [] ignored-folder <-- this directory will be ignored
+        - [] Renamed TIFF <-- this directory will be processed
+   - [] book-2 <-- this whole parent directory is ignored because it is not in the inclusion set
+   - [] book-3
+        - [] docs <-- this directory will be ignored
+        - [] jpg <-- this directory will be ignored
+        - [] TIFFs renamed <-- this directory will be processed
+```
 
 You would use this if you want to only process a smaller batch from a directory (e.g. as a test run, or if an earlier run missed some books in a project)
 
@@ -114,16 +117,18 @@ You would use this if you want to only process a smaller batch from a directory 
 
 This script attempts to convert every subdirectory it finds if it matches a given naming convention, _unless_ the first child directory is in a given set:
 
-[] _all-books-originals_ <-- $collectionPath
-   - [] _book-1_
-        - [] _docs_ <-- this directory will be ignored
-        - [] _ignored-folder_ <-- this directory will be ignored
-        - [] **Renamed TIFF** <-- this directory will be processed
-   - [] _book-2_ <-- this whole parent directory is ignored because it is in the exclusion set
-   - [] _book-3_
-        - [] _docs_ <-- this directory will be ignored
-        - [] _jpgs_ <-- this directory will be ignored
-        - [] **TIFFs renamed** <-- this directory will be processed
+```
+[] all-books-originals <-- $collectionPath>
+   - [] book-1
+        - [] docs <-- this directory will be ignored
+        - [] ignored-folder <-- this directory will be ignored
+        - [] Renamed TIFF <-- this directory will be processed
+   - [] book-2 <-- this whole parent directory is ignored because it is in the exclusion set
+   - [] book-2
+        - [] docs <-- this directory will be ignored
+        - [] jpg <-- this directory will be ignored
+        - [] TIFFs renamed <-- this directory will be processed
+```
 
 You would use this if you want to process every subdirectory except for certain ones. (e.g. books from an earlier run using the inclusion set, or files that need to be re-scanned)
 
@@ -133,12 +138,12 @@ You would use this if you want to process every subdirectory except for certain 
 
 If using `process_all.ps1` you may wish to adjust the starting point for your loop. This might be necessary if you have a very large number of digitisations to process and your run falls over for some reason partway through. You can do this by changing the counter check on line 25:
 
-```sh
+```pwsh
     if ($counter -gt -1) {
 ```
 Change `-1` to the number corresponding to the next item you want to be processed, e.g.
 
-```sh
+```pwsh
     if ($counter -gt 23) {
 ```
 Note that the loop is zero-indexed so the line above would start processing the twenty-third subdirectory in `$collectionPath`, not the twenty-fourth. By default, subdirectories will be processed in alphabetic order by name.
@@ -149,24 +154,24 @@ If using `process_included.ps1` or `process_all_except_excluded.ps1` you need to
 
 ImageMagick is where the uh, magic happens, on this line:
 
-```sh
+```pwsh
 magick -quiet $resolvedPath\*.tif -resample 200 -unsharp 1.5x1+0.7+0.02 -compress JPEG -quality 60 -depth 8 $pdfDir\$parentName.pdf
 ```
 
 You can adjust the ImageMagick flags to change how the image files are processed. The settings in these scripts were chosen for the best balance of quality and file size when processing very large TIFFs for the Sandhurst Collection, but your needs may differ. You can read [the full ImageMagick documentation](https://imagemagick.org/script/command-line-processing.php#option) but it can be a little intimidating. The key things to play with are:
 
-* resample
+#### resample
 
 [Resize the image](https://imagemagick.org/script/command-line-options.php#resample) so that its rendered size remains the same as the original at the specified target resolution.
 
-* unsharp
+#### unsharp
 
 Sharpen the image [with an unsharp mask operator](https://imagemagick.org/script/command-line-options.php#unsharp).
 
-* quality
+#### quality
 
 Control the [compression quality of image files](https://imagemagick.org/script/command-line-options.php#quality) when you are creating or saving them. This option is important for managing the trade-off between image quality and file size.
 
-* depth
+#### depth
 
 Color depth is the [number of bits per channel](https://imagemagick.org/script/command-line-options.php#depth) for each pixel.
