@@ -68,73 +68,89 @@ winget install ImageMagick.Q16-HDRI
 
 ## Scripts
 
-There are three scripts. Each script will run through every subdirectory of every subdirectory in a given directory and, if it matches a given naming convention:
+Each of the three scripts recursively scans all subdirectories within a given directory assigned to the variable `$collectionPath`. If a subdirectory's name matches one of the names listed in `$tiffDirectoryNames`, the script runs an image conversion using `ImageMagick` which:
 
-1. convert all TIFF files in the directory to PDF
-2. compress the images using a JPG algorithm
-3. gather together all the PDF images in order to create a single, multi-page PDF file
+1. converts all TIFF files in the directory to PDF
+2. compresses the images using a JPG algorithm
+3. gathers together all the PDF images in order to create a single, multi-page PDF file
 
 The primary difference between the scripts is in how they identify which directories to look at.
 
 ### `process_all.ps1`
 
-This script attempts to convert every subdirectory if it matches a given naming convention:
+This script attempts to convert every subdirectory if it has a directory matching a name in `$tiffDirectoryNames`:
 
 ```
 [] all-books-originals <-- $collectionPath
    - [] book-1
         - [] docs <-- this directory will be ignored
         - [] ignored-folder <-- this directory will be ignored
-        - [] Renamed TIFF <-- this directory will be processed
+        - [] Renamed TIFF <-- this directory will be processed because its name is in $tiffDirectoryNames
    - [] book-2
         - [] docs <-- this directory will be ignored
         - [] jpg <-- this directory will be ignored
-        - [] TIFFs renamed <-- this directory will be processed
+        - [] TIFFs renamed <-- this directory will be processed because its name is in $tiffDirectoryNames
 ```
 
 You would use this script to process everything in a directory (e.g. all the books from a digitisation project).
 
 ### `process_included.ps1`
 
-This script attempts to convert every subdirectory if it matches a given naming convention, only if the first child directory is in a given set:
+This script attempts to convert every subdirectory if the subdirectory name is in `Records` and it in turn has a directory matching a name in `$tiffDirectoryNames`:
 
 ```
 [] all-books-originals <-- $collectionPath
    - [] book-1
         - [] docs <-- this directory will be ignored
         - [] ignored-folder <-- this directory will be ignored
-        - [] Renamed TIFF <-- this directory will be processed
-   - [] book-2 <-- this whole parent directory is ignored because it is not in the inclusion set
+        - [] Renamed TIFF <-- this directory will be processed because its name is in $tiffDirectoryNames
+   - [] book-2 <-- this whole parent directory is ignored because it is NOT in $Records
    - [] book-3
         - [] docs <-- this directory will be ignored
         - [] jpg <-- this directory will be ignored
-        - [] TIFFs renamed <-- this directory will be processed
+        - [] TIFFs renamed <-- this directory will be processed because its name is in $tiffDirectoryNames
 ```
 
 You would use this if you want to only process a smaller batch from a directory (e.g. as a test run, or if an earlier run missed some books in a project)
 
 ### `process_all_except_excluded.ps1`
 
-This script attempts to convert every subdirectory it finds if it matches a given naming convention, _unless_ the first child directory is in a given set:
+This script attempts to convert every subdirectory if it has a directory matching a name in `$tiffDirectoryNames`, _unless_ the first subdirectory name is in `$RecordsToExclude`:
 
 ```
 [] all-books-originals <-- $collectionPath
    - [] book-1
         - [] docs <-- this directory will be ignored
         - [] ignored-folder <-- this directory will be ignored
-        - [] Renamed TIFF <-- this directory will be processed
-   - [] book-2 <-- this whole parent directory is ignored because it is in the exclusion set
+        - [] Renamed TIFF <-- this directory will be processed because its name is in $tiffDirectoryNames
+   - [] book-2 <-- this whole parent directory is ignored because it IS in $RecordsToExclude
    - [] book-2
         - [] docs <-- this directory will be ignored
         - [] jpg <-- this directory will be ignored
-        - [] TIFFs renamed <-- this directory will be processed
+        - [] final_files_to_convert <-- this directory will be processed because its name is in $tiffDirectoryNames
 ```
 
 You would use this if you want to process every subdirectory except for certain ones. (e.g. books from an earlier run using the inclusion set, or files that need to be re-scanned)
 
 ## Adjusting the scripts for your use
 
+### Telling the script which subdirectory contains your TIFF files
+
+You may have multiple subdirectories with TIFF files and only want the script to look in one of them. You should determine a naming convention and then tell your script which directory name(s) to look for by entering them in the `$tiffDirectoryNames` array:
+
+```pwsh
+$tiffDirectoryNames = @("Renamed TIF", "TIFFs renamed", "TIFFs for conversion", "final_TIFFs") 
+```
+
+If you are more sensible than us, you will have used one single naming convention, so you will only need to enter one name:
+
+```pwsh
+$tiffDirectoryNames = @("final_files_to_convert")
+```
+
 ### Determining which subdirectories are processed
+
+#### Using a counter
 
 If using `process_all.ps1` you may wish to adjust the starting point for your loop. This might be necessary if you have a very large number of digitisations to process and your run falls over for some reason partway through. You can do this by changing the counter check on line 25:
 
@@ -148,7 +164,15 @@ Change `-1` to the number corresponding to the next item you want to be processe
 ```
 Note that the loop is zero-indexed so the line above would start processing the twenty-third subdirectory in `$collectionPath`, not the twenty-fourth. By default, subdirectories will be processed in alphabetic order by name.
 
-If using `process_included.ps1` or `process_all_except_excluded.ps1` you need to enter your own values for the lists in `$Records` or `$RecordsToExclude` respectively. These should be the names of directories within your `$collectionPath`.
+#### Specifying subdirectories to include or exclude
+
+If using `process_included.ps1` or `process_all_except_excluded.ps1`, the script uses a [PowerShell array](https://learn.microsoft.com/en-us/powershell/scripting/lang-spec/chapter-09?view=powershell-7.5) to list the names of subdirectories that should be included or excluded:
+
+```pwsh
+$Records = @("directory_1", "book2")
+```
+
+You need to replace the values in the scripts with your own values for the arrays in `$Records` (subdirectories to include) or `$RecordsToExclude` (subdirectories to _exclude_). These should be the names of directories within your `$collectionPath`.
 
 ### Adjusting the ImageMagick configuration 
 

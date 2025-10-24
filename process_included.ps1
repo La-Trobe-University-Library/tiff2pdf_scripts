@@ -1,5 +1,9 @@
 $collectionPath = 'Path\to\parent\directory'
 $pdfDir = 'Path\to\where\pdf\should\be\saved'
+# change the Test-Path values to match your needs
+# this will check each directory within $collectionPath for directories named "Renamed TIF", "Renamed TIFF" etc, and process them
+# if you are sensible, you will choose a single naming convention and this array will only contain one name!
+$tiffDirectoryNames = @("Renamed TIF", "Renamed TIFF", "TIFFs renamed", "TIFFs for conversion")
 
 function Process-To-PDF {
 
@@ -19,34 +23,20 @@ Get-ChildItem –Path $collectionPath |Foreach-Object {
 
   # adjust this list to your needs
   # these should be the names of subdirectories within $collectionPath that ARE to be processed
-  $Records = @("sa00001", "sa00002","sa00172","sa00194","sa00223", "sa00224")
+  $Records = @("book1", "book2","book3")
 
   if ($Records -contains $_.Name ) {
 
-        # change the Test-Path values to match your needs
-        # this will check each entry within $Records for directories named "Renamed TIF", "Renamed TIFF", or "TIFFs renamed" in that order, and process the first one it finds
-
-        if (Test-Path -Path $_\"Renamed TIF") {
-        $resolvedPath = Resolve-Path $_\"Renamed TIF"
-        Write-Host "Processing" $_.Name
-        Process-To-PDF -resolvedPath $resolvedPath -parentName $_.Name
-        }
-
-        elseif (Test-Path -Path $_\"Renamed TIFF") {
-        $resolvedPath = Resolve-Path $_\"Renamed TIFF"
-        Write-Host "Processing" $_.Name
-        Process-To-PDF -resolvedPath $resolvedPath -parentName $_.Name
-        }
-
-        elseif (Test-Path -Path $_\"TIFFs renamed") {
-        $resolvedPath = Resolve-Path $_\"TIFFs renamed"
-        Write-Host "Processing" $_.Name
-        Process-To-PDF -resolvedPath $resolvedPath -parentName $_.Name
-        }
-
-        else {
-        Write-Host "Skipping" $_.Name
-        }
+    $dir = $_
+    Get-ChildItem $dir |ForEach-Object {
+      if ($tiffDirectoryNames -contains $_.Name ) {
+        if (Test-Path -Path $_) {
+          $resolvedPath = Resolve-Path $_
+          Write-Host "Processing" $dir.Name
+          Process-To-PDF -resolvedPath $resolvedPath -parentName $dir.FullName
+          }
+      }
     }
+  }
 
 }

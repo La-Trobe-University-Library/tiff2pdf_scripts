@@ -1,6 +1,10 @@
 $collectionPath = 'Path\to\parent\directory'
 $pdfDir = 'Path\to\where\pdf\should\be\saved'
 $counter = 0
+# change the Test-Path values to match your needs
+# this will check each directory within $collectionPath for directories named "Renamed TIF", "Renamed TIFF" etc, and process them
+# if you are sensible, you will choose a single naming convention and this array will only contain one name!
+$tiffDirectoryNames = @("Renamed TIF", "Renamed TIFF", "TIFFs renamed", "TIFFs for conversion")
 
 function Process-To-PDF {
 
@@ -23,31 +27,16 @@ Get-ChildItem –Path $collectionPath |Foreach-Object {
     # e.g. `if ($counter -gt 23) {`
 
     if ($counter -gt -1) {
-
-      # change the Test-Path values to match your needs
-      # this will check each directory within $collectionPath for directories named "Renamed TIF", "Renamed TIFF", or "TIFFs renamed" in that order, and process the first one it finds
-
-      if (Test-Path -Path $_\"Renamed TIF") {
-        $resolvedPath = Resolve-Path $_\"Renamed TIF"
-        Write-Host "Processing" $_.Name
-        Process-To-PDF -resolvedPath $resolvedPath -parentName $_.Name
+      $dir = $_
+      Get-ChildItem $dir |ForEach-Object {
+        if ($tiffDirectoryNames -contains $_.Name ) {
+          if (Test-Path -Path $_) {
+            $resolvedPath = Resolve-Path $_
+            Write-Host "Processing" $dir.Name
+            Process-To-PDF -resolvedPath $resolvedPath -parentName $dir.FullName
+            }
         }
-
-        elseif (Test-Path -Path $_\"Renamed TIFF") {
-        $resolvedPath = Resolve-Path $_\"Renamed TIFF"
-        Write-Host "Processing" $_.Name
-        Process-To-PDF -resolvedPath $resolvedPath -parentName $_.Name
-        }
-
-        elseif (Test-Path -Path $_\"TIFFs renamed") {
-        $resolvedPath = Resolve-Path $_\"TIFFs renamed"
-        Write-Host "Processing" $_.Name
-        Process-To-PDF -resolvedPath $resolvedPath -parentName $_.Name
-        }
-
-        else {
-        Write-Host "Skipping" $_.Name
-        }
+      }
     }
     $counter++
 }
