@@ -31,7 +31,7 @@ To use the scripts you will need:
 
 ### Installing PowerShell
 
-[PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/overview) is Microsoft's modern command line scripting shell. You should be able to install this directly from the Windows App Store. At the time of writing, the latest PowerShell is version 7. You _might_ need to enact a "local admin" privilege escalation if prompted.
+[PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/overview) is Microsoft's modern command line scripting shell. You should be able to install this directly from the Windows App Store. At the time of writing, the latest PowerShell is version 7. La Trobe users might need to enact a "local admin" privilege escalation if prompted.
 
 Once installed, you should be able to open PowerShell from your taskbar search menu, or click on the desktop icon if one was added.
 
@@ -66,6 +66,8 @@ An alternative way to install is using `winget` directly from Powershell:
 winget install ImageMagick.Q16-HDRI
 ```
 
+Depending on how many files you have, how big they are, and the processing power of your computer, this could take a significant amount of time. The script will print a message each time a subdirectory is processed.
+
 ## Scripts
 
 Each of the three scripts recursively scans all subdirectories within a given directory assigned to the variable `$collectionPath`. If a subdirectory's name matches one of the names listed in `$tiffDirectoryNames`, the script runs an image conversion using `ImageMagick` which:
@@ -74,7 +76,13 @@ Each of the three scripts recursively scans all subdirectories within a given di
 2. compresses the images using a JPG algorithm
 3. gathers together all the PDF images in order to create a single, multi-page PDF file
 
-The primary difference between the scripts is in how they identify which directories to look at.
+The primary difference between the scripts is in how they identify which directories to look at. Once you have [adjusted the script for your use](#adjusting-the-scripts-for-your-use) you can run it with PowerShell. From the directory where your scripts are located:
+
+```pwsh
+.\process_all.ps1
+```
+
+
 
 ### `process_all.ps1`
 
@@ -133,6 +141,11 @@ This script attempts to convert every subdirectory if it has a directory matchin
 You would use this if you want to process every subdirectory except for certain ones. (e.g. books from an earlier run using the inclusion set, or files that need to be re-scanned)
 
 ## Adjusting the scripts for your use
+
+### Identifying which directories to use
+
+Set the full path of the directory holding the files you wish to process as `$collectionPath`.
+Set the full path of the directory you want to save your PDF files to as `$pdfDir`.
 
 ### Telling the script which subdirectory contains your TIFF files
 
